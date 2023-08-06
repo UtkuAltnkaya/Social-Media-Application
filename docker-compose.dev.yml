@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo
+    ports:
+      - '27017:27017'
+    networks:
+      - services_network
+
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=-
+      - POSTGRES_PASSWORD=-
+    networks:
+      - services_network
+
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      - RABBITMQ_DEFAULT_USER=-
+      - RABBITMQ_DEFAULT_PASS=-
+    networks:
+      - services_network
+
+  api-gateway:
+    build: ./gateway
+    ports:
+      - '8080:8080'
+    depends_on:
+      - authentication
+      - user
+      - posts
+      - comment
+      - follow
+    networks:
+      - services_network
+
+  authentication:
+    build: ./services/auth
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - services_network
+
+  user:
+    build: ./services/user
+    ports:
+      - '3001:3001'
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - services_network
+
+  posts:
+    build: ./services/post
+    ports:
+      - '3002:3002'
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - services_network
+
+  comment:
+    build: ./services/comment
+    ports:
+      - '3003:3003'
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - services_network
+
+  follow:
+    build: ./services/follow
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - services_network
+
+networks:
+  services_network:
+    driver: bridge

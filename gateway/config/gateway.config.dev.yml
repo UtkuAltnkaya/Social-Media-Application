@@ -1,0 +1,72 @@
+http:
+  port: 8080
+admin:
+  port: 9876
+  host: localhost
+apiEndpoints:
+  auth:
+    host: localhost
+    paths: ['/auth', '/auth/*']
+  user:
+    host: localhost
+    paths: ['/user', '/user/*']
+  posts:
+    host: localhost
+    paths: ['/posts','/posts/*']
+  comment:
+    host: localhost
+    paths: ['/comment','/comment/*']
+
+serviceEndpoints:
+  auth:
+    url: 'http://authentication:3000'
+  user:
+    url: 'http://user:3001'
+  posts:
+    url: 'http://posts:3002'
+  comment:
+    url: 'http://comment:3003'
+
+policies:
+  - basic-auth
+  - cors
+  - expression
+  - key-auth
+  - log
+  - oauth2
+  - proxy
+  - rate-limit
+pipelines:
+  authPipeline:
+    apiEndpoints:
+      - auth
+    policies:
+      - proxy:
+        - action: 
+            serviceEndpoint: auth
+            changeOrigin: true
+  userPipeline:
+    apiEndpoints:
+      - user
+    policies:
+      - proxy:
+        - action: 
+            serviceEndpoint: user
+            changeOrigin: true
+  postPipeline:
+    apiEndpoints:
+      - posts
+    policies:
+      - proxy:
+        - action: 
+            serviceEndpoint: posts
+            changeOrigin: true
+  commentPipeline:
+    apiEndpoints:
+      - comment
+    policies:
+      - proxy:
+        - action: 
+            serviceEndpoint: comment
+            changeOrigin: true
+
